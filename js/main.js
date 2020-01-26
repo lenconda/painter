@@ -36,7 +36,7 @@ window.onload = function() {
     get: function() { return this._undoStack; },
     set: function(v) {
       this._undoStack = v;
-      if (v.length === 0) {
+      if (v.length <= 1) {
         undoButton.setAttribute('disabled', true);
       } else {
         undoButton.removeAttribute('disabled');
@@ -90,7 +90,7 @@ window.onload = function() {
   });
 
   // 撤销栈
-  data.undoStack = [];
+  data.undoStack = [context.getImageData(0, 0, painter.clientWidth, painter.clientHeight)];
   // 重做栈
   data.redoStack = [];
   // 是否在绘制
@@ -98,7 +98,7 @@ window.onload = function() {
   // 是否使用橡皮擦
   data.eraser = false;
   // 画笔颜色
-  data.strokeStyle = '#000';
+  data.strokeStyle = '#fcc';
   // 画笔粗细
   data.lineWidth = 2;
   // 当前点
@@ -142,6 +142,14 @@ window.onload = function() {
     });
   });
 
+  function undo() {
+    var lastDataURL = data.undoStack[data.undoStack.length - 1];
+    var newDataURL = data.undoStack[data.undoStack.length - 2];
+    data.undoStack = data.undoStack.slice(0, -1);
+    data.redoStack = data.redoStack.concat(lastDataURL);
+    newDataURL && context.putImageData(newDataURL, 0, 0);
+  }
+
   painter.addEventListener('mousedown', function(event) {
     data.painting = true;
     var currentPointXAxis = event.clientX;
@@ -174,8 +182,10 @@ window.onload = function() {
       }
 
       debounce(function() {
-        data.undoStack = data.undoStack.concat(painter.toDataURL());
+        data.undoStack = data.undoStack.concat(context.getImageData(0, 0, painter.clientWidth, painter.clientHeight));
       }, 500);
     }
   });
+
+  undoButton.addEventListener('click', undo);
 }
