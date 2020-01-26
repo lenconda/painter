@@ -1,0 +1,68 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.control-panel-wrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  position: fixed;
+  bottom: 30px;
+  box-sizing: border-box;
+  padding: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 300px;
+  overflow-x: auto;
+  z-index: auto;
+  /* z-index: -100; */
+}
+
+.control-panel {
+  display: flex;
+  margin: 0 8px;
+  background-color: #fff;
+  box-shadow: 0 0 20px 0 rgba(0, 0, 0, .12);
+  box-sizing: border-box;
+  border-radius: 8px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.control-panel > *:first-child {
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+
+.control-panel > *:last-child {
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.control-panel > button {
+  background-color: #fff;
+  border: 0;
+  outline: 0;
+  padding: 15px;
+  transition: all .3s;
+}
+
+.control-panel > button:hover {
+  background-color: rgba(0, 0, 0, .032);
+  cursor: pointer;
+  transition: all .3s;
+}
+
+.control-panel > button:disabled:hover {
+  background-color: #fff;
+  cursor: default;
+}
+
+.control-panel > button.active {
+  background-color: rgba(0, 0, 0, .032);
+  transition: all .3s;
+}
