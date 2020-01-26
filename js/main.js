@@ -5,6 +5,9 @@ window.onload = function() {
   var controlPanelWrapper = document.getElementById('wrapper');
   var switchPencilButton = document.getElementById('switch-pencil');
   var switchEraserButton = document.getElementById('switch-eraser');
+  var clearButton = document.getElementById('clear');
+  var undoButton = document.getElementById('undo');
+  var redoButton = document.getElementById('redo');
 
   painter.width = document.body.clientWidth;
   painter.height = document.body.clientHeight;
@@ -18,6 +21,10 @@ window.onload = function() {
   var lineWidth = 2;
   // 画笔颜色
   var strokeStyle = '#000';
+  // 撤销栈
+  var undoStack = [];
+  // 重做栈
+  var redoStack = [];
 
   function setControllerClass() {
     if (eraser) {
@@ -29,7 +36,18 @@ window.onload = function() {
     }
   }
 
+  function setUndoRedoButtonsClass() {
+    undoStack.length === 0
+    ? undoButton.setAttribute('disabled', true)
+    : undoButton.removeAttribute('disabled');
+
+    redoStack.length === 0
+    ? redoButton.setAttribute('disabled', true)
+    : undoButton.removeAttribute('disabled');
+  }
+
   setControllerClass();
+  setUndoRedoButtonsClass();
 
   function switchController() {
     eraser = !eraser;
@@ -42,6 +60,10 @@ window.onload = function() {
 
   switchEraserButton.addEventListener('click', function() {
     switchController();
+  });
+
+  clearButton.addEventListener('click', function() {
+    context.clearRect(0, 0, painter.clientWidth, painter.clientHeight);
   });
 
   function drawLine(startPointXAxis, startPointYAxis, endPointXAxis, endPointYAxis) {
@@ -91,14 +113,20 @@ window.onload = function() {
   });
 
   painter.addEventListener('mousemove', function(event) {
+    var currentPointXAxis = event.clientX;
+    var currentPointYAxis = event.clientY;
+
     if (painting) {
-      var currentPointXAxis = event.clientX;
-      var currentPointYAxis = event.clientY;
-      drawLine(currentPoint.x, currentPoint.y, currentPointXAxis, currentPointYAxis);
-      currentPoint = {
-        x: currentPointXAxis,
-        y: currentPointYAxis,
-      };
+      if (eraser) {
+        var eraseWidth = lineWidth * 10;
+        context.clearRect(currentPointXAxis - lineWidth, currentPointYAxis - lineWidth, eraseWidth, eraseWidth);
+      } else {
+        drawLine(currentPoint.x, currentPoint.y, currentPointXAxis, currentPointYAxis);
+        currentPoint = {
+          x: currentPointXAxis,
+          y: currentPointYAxis,
+        };
+      }
     }
   });
 }
