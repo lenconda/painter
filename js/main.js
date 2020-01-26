@@ -12,46 +12,100 @@ window.onload = function() {
   painter.width = document.body.clientWidth;
   painter.height = document.body.clientHeight;
 
-  // 当鼠标按下时置 true
-  var painting = false;
-  // 使用橡皮擦时置 true
-  var eraser = false;
-  var currentPoint = { x: null, y: null };
-  // 画线粗细
-  var lineWidth = 2;
-  // 画笔颜色
-  var strokeStyle = '#000';
-  // 撤销栈
-  var undoStack = [];
-  // 重做栈
-  var redoStack = [];
+  // 数据中心
+  var data = {};
 
-  function setControllerClass() {
-    if (eraser) {
-      switchEraserButton.classList.add('active');
-      switchPencilButton.classList.remove('active');
-    } else {
-      switchEraserButton.classList.remove('active');
-      switchPencilButton.classList.add('active');
+  // 防抖
+  var debounce = (function() {
+    var _this = this;
+    var timer = null;
+
+    return function(fn, timeout) {
+      if (!(typeof fn === 'function') || !!!fn) { return; }
+
+      clearTimeout(timer);
+      timer = setTimeout(function() {
+        fn.apply(_this, arguments);
+      }, timeout);
     }
-  }
+  })();
 
-  function setUndoRedoButtonsClass() {
-    undoStack.length === 0
-    ? undoButton.setAttribute('disabled', true)
-    : undoButton.removeAttribute('disabled');
+  Object.defineProperty(data, 'undoStack', {
+    enumerable: true,
+    configurable: true,
+    get: function() { return this._undoStack; },
+    set: function(v) {
+      this._undoStack = v;
+      if (v.length === 0) {
+        undoButton.setAttribute('disabled', true);
+      } else {
+        undoButton.removeAttribute('disabled');
+      }
+      return v;
+    },
+  });
 
-    redoStack.length === 0
-    ? redoButton.setAttribute('disabled', true)
-    : undoButton.removeAttribute('disabled');
-  }
+  Object.defineProperty(data, 'redoStack', {
+    enumerable: true,
+    configurable: true,
+    get: function() { return this._redoStack; },
+    set: function(v) {
+      this._redoStack = v;
+      if (v.length === 0) {
+        redoButton.setAttribute('disabled', true);
+      } else {
+        redoButton.removeAttribute('disabled');
+      }
+      return v;
+    },
+  });
 
-  setControllerClass();
-  setUndoRedoButtonsClass();
+  Object.defineProperty(data, 'eraser', {
+    enumerable: true,
+    configurable: true,
+    get: function() { return this._eraser; },
+    set: function(v) {
+      this._eraser = v;
+      if (v) {
+        switchEraserButton.classList.add('active');
+        switchPencilButton.classList.remove('active');
+      } else {
+        switchEraserButton.classList.remove('active');
+        switchPencilButton.classList.add('active');
+      }
+      return v;
+    }
+  });
+
+  ['painting', 'strokeStyle', 'lineWidth', 'currentPoint'].forEach(function(value) {
+    Object.defineProperty(data, value, {
+      enumerable: true,
+      configurable: true,
+      get: function() { return this['_' + value]; },
+      set: function(v) {
+        this['_' + value] = v;
+        return v;
+      },
+    });
+  });
+
+  // 撤销栈
+  data.undoStack = [];
+  // 重做栈
+  data.redoStack = [];
+  // 是否在绘制
+  data.painting = false;
+  // 是否使用橡皮擦
+  data.eraser = false;
+  // 画笔颜色
+  data.strokeStyle = '#000';
+  // 画笔粗细
+  data.lineWidth = 2;
+  // 当前点
+  data.currentPoint = { x: null, y: null, };
 
   function switchController() {
-    eraser = !eraser;
-    setControllerClass();
+    data.eraser = !data.eraser;
   }
 
   switchPencilButton.addEventListener('click', function() {
@@ -68,13 +122,13 @@ window.onload = function() {
 
   function drawLine(startPointXAxis, startPointYAxis, endPointXAxis, endPointYAxis) {
     context.beginPath();
-    context.lineWidth = lineWidth;
+    context.lineWidth = data.lineWidth;
     // 线条末端样式
     context.lineCap = 'round';
     // 线条接合处样式
     context.lineJoin = 'round';
     // 设置画笔颜色
-    context.strokeStyle = strokeStyle;
+    context.strokeStyle = data.strokeStyle;
     context.moveTo(startPointXAxis, startPointYAxis);
     context.lineTo(endPointXAxis, endPointYAxis);
     context.stroke();
@@ -82,51 +136,46 @@ window.onload = function() {
   }
 
   // 解决了在控制栏画图时图线不流畅的问题
-  controlPanelWrapper.addEventListener('mousedown', function(event) {
-    var e = new MouseEvent(event.type, event);
-    painter.dispatchEvent(e);
-  });
-
-  controlPanelWrapper.addEventListener('mouseup', function(event) {
-    var e = new MouseEvent(event.type, event);
-    painter.dispatchEvent(e);
-  });
-
-  controlPanelWrapper.addEventListener('mousemove', function(event) {
-    var e = new MouseEvent(event.type, event);
-    painter.dispatchEvent(e);
+  ['mousedown', 'mouseup', 'mousemove'].forEach(function(value) {
+    controlPanelWrapper.addEventListener(value, function() {
+      painter.dispatchEvent(new MouseEvent(event.type, event));
+    });
   });
 
   painter.addEventListener('mousedown', function(event) {
-    painting = true;
+    data.painting = true;
     var currentPointXAxis = event.clientX;
     var currentPointYAxis = event.clientY;
 
-    currentPoint = {
+    data.currentPoint = {
       x: currentPointXAxis,
       y: currentPointYAxis,
     };
   });
 
   painter.addEventListener('mouseup', function() {
-    painting = false;
+    data.painting = false;
   });
 
   painter.addEventListener('mousemove', function(event) {
     var currentPointXAxis = event.clientX;
     var currentPointYAxis = event.clientY;
 
-    if (painting) {
-      if (eraser) {
-        var eraseWidth = lineWidth * 10;
-        context.clearRect(currentPointXAxis - lineWidth, currentPointYAxis - lineWidth, eraseWidth, eraseWidth);
+    if (data.painting) {
+      if (data.eraser) {
+        var eraseWidth = data.lineWidth * 10;
+        context.clearRect(currentPointXAxis - data.lineWidth, currentPointYAxis - data.lineWidth, eraseWidth, eraseWidth);
       } else {
-        drawLine(currentPoint.x, currentPoint.y, currentPointXAxis, currentPointYAxis);
-        currentPoint = {
+        drawLine(data.currentPoint.x, data.currentPoint.y, currentPointXAxis, currentPointYAxis);
+        data.currentPoint = {
           x: currentPointXAxis,
           y: currentPointYAxis,
         };
       }
+
+      debounce(function() {
+        data.undoStack = data.undoStack.concat(painter.toDataURL());
+      }, 500);
     }
   });
 }
