@@ -1,4 +1,7 @@
 window.onload = function() {
+  // 禁止右键菜单
+  document.oncontextmenu = function() { return false; };
+
   var painter = document.getElementById('painter');
   var context = painter.getContext('2d');
 
@@ -8,6 +11,9 @@ window.onload = function() {
   var clearButton = document.getElementById('clear');
   var undoButton = document.getElementById('undo');
   var redoButton = document.getElementById('redo');
+  var currentColor = document.getElementById('color');
+  var backgroundColor = document.getElementById('background-color');
+  var downloadButton = document.getElementById('download');
 
   painter.width = document.body.clientWidth;
   painter.height = document.body.clientHeight;
@@ -29,6 +35,12 @@ window.onload = function() {
       }, timeout);
     }
   })();
+
+  // 设置背景颜色
+  function setBackgroundColor(color) {
+    context.fillStyle = color;
+    context.fillRect(0, 0, painter.clientWidth, painter.clientHeight);
+  }
 
   Object.defineProperty(data, 'undoStack', {
     enumerable: true,
@@ -77,7 +89,30 @@ window.onload = function() {
     }
   });
 
-  ['painting', 'strokeStyle', 'lineWidth', 'currentPoint'].forEach(function(value) {
+  Object.defineProperty(data, 'strokeStyle', {
+    enumerable: true,
+    configurable: true,
+    get: function() { return this._strokeStyle; },
+    set: function(v) {
+      this._strokeStyle = v;
+      currentColor.style.backgroundColor = v;
+      return v;
+    }
+  });
+
+  Object.defineProperty(data, 'backgroundColor', {
+    enumerable: true,
+    configurable: true,
+    get: function() { return this._backgroundColor; },
+    set: function(v) {
+      this._backgroundColor = v;
+      setBackgroundColor(v);
+      backgroundColor.style.backgroundColor = v;
+      return v;
+    }
+  });
+
+  ['painting', 'lineWidth', 'currentPoint'].forEach(function(value) {
     Object.defineProperty(data, value, {
       enumerable: true,
       configurable: true,
@@ -98,26 +133,29 @@ window.onload = function() {
   // 是否使用橡皮擦
   data.eraser = false;
   // 画笔颜色
-  data.strokeStyle = '#fcc';
+  data.strokeStyle = '#000';
   // 画笔粗细
   data.lineWidth = 2;
   // 当前点
   data.currentPoint = { x: null, y: null, };
+  // 背景颜色
+  data.backgroundColor = '#fff';
 
-  function switchController() {
-    data.eraser = !data.eraser;
+  function switchController(eraser) {
+    data.eraser = eraser;
   }
 
   switchPencilButton.addEventListener('click', function() {
-    switchController();
+    switchController(false);
   });
 
   switchEraserButton.addEventListener('click', function() {
-    switchController();
+    switchController(true);
   });
 
   clearButton.addEventListener('click', function() {
     context.clearRect(0, 0, painter.clientWidth, painter.clientHeight);
+    data.undoStack = data.undoStack.concat(context.getImageData(0, 0, painter.clientWidth, painter.clientHeight));
   });
 
   function drawLine(startPointXAxis, startPointYAxis, endPointXAxis, endPointYAxis) {
@@ -137,28 +175,49 @@ window.onload = function() {
 
   // 解决了在控制栏画图时图线不流畅的问题
   ['mousedown', 'mouseup', 'mousemove'].forEach(function(value) {
-    controlPanelWrapper.addEventListener(value, function() {
+    controlPanelWrapper.addEventListener(value, function(event) {
+      // 当鼠标在控制板中间被按下时阻止事件
+      if (value === 'mousedown' && event.target !== this) {
+        return false;
+      }
       painter.dispatchEvent(new MouseEvent(event.type, event));
     });
   });
 
   function undo() {
-    var lastDataURL = data.undoStack[data.undoStack.length - 1];
-    var newDataURL = data.undoStack[data.undoStack.length - 2];
+    var lastImageData = data.undoStack[data.undoStack.length - 1];
+    var newImageData = data.undoStack[data.undoStack.length - 2];
     data.undoStack = data.undoStack.slice(0, -1);
-    data.redoStack = data.redoStack.concat(lastDataURL);
-    newDataURL && context.putImageData(newDataURL, 0, 0);
+    data.redoStack = data.redoStack.concat(lastImageData);
+    newImageData && context.putImageData(newImageData, 0, 0);
+  }
+
+  function redo() {
+    var previousImageData = data.redoStack[data.redoStack.length - 1];
+    data.redoStack = data.redoStack.slice(0, -1);
+    data.undoStack = data.undoStack.concat(previousImageData);
+    previousImageData && context.putImageData(previousImageData, 0, 0);
+  }
+
+  function download() {
+    var currentImageDataURL = painter.toDataURL('image/png');
+    var downloadLink = document.createElement('a');
+    downloadLink.setAttribute('href', currentImageDataURL);
+    downloadLink.setAttribute('download', Date.parse(new Date()).toString() + '.png');
+    downloadLink.click();
   }
 
   painter.addEventListener('mousedown', function(event) {
-    data.painting = true;
-    var currentPointXAxis = event.clientX;
-    var currentPointYAxis = event.clientY;
+    if (event.button === 0) {
+      data.painting = true;
+      var currentPointXAxis = event.clientX;
+      var currentPointYAxis = event.clientY;
 
-    data.currentPoint = {
-      x: currentPointXAxis,
-      y: currentPointYAxis,
-    };
+      data.currentPoint = {
+        x: currentPointXAxis,
+        y: currentPointYAxis,
+      };
+    }
   });
 
   painter.addEventListener('mouseup', function() {
@@ -188,4 +247,6 @@ window.onload = function() {
   });
 
   undoButton.addEventListener('click', undo);
+  redoButton.addEventListener('click', redo);
+  downloadButton.addEventListener('click', download);
 }
