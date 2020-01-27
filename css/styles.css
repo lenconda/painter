@@ -24,7 +24,7 @@ html, body {
   display: flex;
   margin: 0 8px;
   background-color: #fff;
-  box-shadow: 0 0 24px 0 rgba(0, 0, 0, .12);
+  box-shadow: 0 0 32px 0 rgba(0, 0, 0, .08);
   box-sizing: border-box;
   border-radius: 8px;
   -webkit-user-select: none;
