@@ -15,9 +15,8 @@ html, body {
   left: 50%;
   transform: translateX(-50%);
   min-width: 300px;
-  overflow-x: auto;
   z-index: auto;
-  /* z-index: -100; */
+  overflow: visible;
 }
 
 .control-panel {
@@ -31,6 +30,20 @@ html, body {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  animation: scaleIn .8s ease-in-out both;
+  z-index: -1;
+}
+
+.control-panel:first-child {
+  animation-delay: 0;
+}
+
+.control-panel:nth-child(2) {
+  animation-delay: .1s;
+}
+
+.control-panel:last-child {
+  animation-delay: .2s;
 }
 
 .control-panel > *:first-child {
@@ -49,10 +62,11 @@ html, body {
   outline: 0;
   padding: 15px;
   transition: all .3s;
+  position: relative;
 }
 
 .control-panel > button:hover {
-  background-color: rgba(0, 0, 0, .032);
+  background-color: rgba(0, 0, 0, .052);
   cursor: pointer;
   transition: all .3s;
 }
@@ -63,7 +77,7 @@ html, body {
 }
 
 .control-panel > button.active {
-  background-color: rgba(0, 0, 0, .032);
+  background-color: rgba(0, 0, 0, .082);
   transition: all .3s;
 }
 

@@ -6,6 +6,8 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Document</title>
   <link rel="stylesheet" href="./css/styles.css">
+  <link rel="stylesheet" href="./css/color_picker.css">
+  <script src="./js/color_picker.js"></script>
 </head>
 <body>
   <canvas id="painter"></canvas>
@@ -15,10 +17,10 @@
       <button id="switch-eraser">橡皮擦</button>
     </div>
     <div class="control-panel">
-      <button class="color-picker">
+      <button id="stroke-color-selector" class="color-picker">
         <div id="color" class="color"></div>
       </button>
-      <button class="color-picker">
+      <button id="background-color-selector" class="color-picker">
         <div id="background-color" class="color"></div>
       </button>
       <button>尺寸</button>

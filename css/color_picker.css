@@ -1,0 +1,136 @@
+@keyframes scaleIn {
+  0% {
+    transform: scale(0);
+  }
+
+  61.8% {
+    transform: scale(1.05);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeSlideIn {
+  0% {
+    transform: translateX(-50%) translateY(-120%);
+    opacity: .24;
+  }
+
+  100% {
+    transform: translateX(-50%) translateY(-140%);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeSlideOut {
+  0% {
+    transform: translateX(-50%) translateY(-140%);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateX(-50%) translateY(-120%);
+    opacity: 0;
+  }
+}
+
+.fade-slide-in {
+  animation: fadeSlideIn .18s ease-in-out both;
+}
+
+.fade-slide-out {
+  animation: fadeSlideOut .18s ease-in-out both;
+}
+
+.color-picker__wrapper {
+  background-color: #fff;
+  border-radius: 8px;
+  box-sizing: border-box;
+  padding: 20px 32px;
+  padding-right: 16px;
+  box-shadow: 0 0 48px 0 rgba(0, 0, 0, .08);
+  position: absolute;
+  left: 50%;
+  z-index: 999;
+}
+
+.color-picker__wrapper::after {
+  content: '';
+  position: absolute;
+  bottom: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  box-shadow: 0 0 48px 0 rgba(0, 0, 0, .08);
+  width: 0;
+  height: 0;
+  border: 9px solid transparent;
+  border-top-color: #fff;
+}
+
+.color-picker__wrapper.hidden {
+  display: none;
+}
+
+.color-picker__wrapper > .slider {
+  height: 4px;
+  width: 240px;
+  margin-bottom: 24px;
+  position: relative;
+  background-color: rgba(0, 0, 0, .05);
+  transition: all .3s;
+  cursor: grab;
+}
+
+.color-picker__wrapper > .slider:hover {
+  background-color: rgba(0, 0, 0, .15);
+  transition: all .3s;
+}
+
+.color-picker__wrapper > .slider::after {
+  position: absolute;
+  left: -1.5em;
+  bottom: 50%;
+  transform: translateY(50%);
+}
+
+.color-picker__wrapper > .slider:first-child::after {
+  content: 'R';
+}
+
+.color-picker__wrapper > .slider:nth-child(2)::after {
+  content: 'G';
+}
+
+.color-picker__wrapper > .slider:nth-child(3)::after {
+  content: 'B';
+}
+
+.color-picker__wrapper > .slider:last-child::after {
+  content: 'A';
+}
+
+.color-picker__wrapper > .slider:last-child {
+  margin-bottom: 0;
+}
+
+.color-picker__wrapper > .slider > span {
+  display: inline-block;
+  position: absolute;
+  left: 0;
+  bottom: 50%;
+  transform: translateY(50%);
+  width: 12px;
+  height: 12px;
+  border: 2px solid #eee;
+  box-shadow: 0 0 1px 0 rgba(0, 0, 0, .32) inset;
+  border-radius: 50%;
+  background-color: #fff;
+  transition: all .3s;
+}
+
+.color-picker__wrapper > .slider > span:hover {
+  border-color: rgba(0, 0, 0, .15);
+  cursor: grab;
+}

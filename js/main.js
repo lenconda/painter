@@ -14,12 +14,19 @@ window.onload = function() {
   var currentColor = document.getElementById('color');
   var backgroundColor = document.getElementById('background-color');
   var downloadButton = document.getElementById('download');
+  var strokeColorSelectButton = document.getElementById('stroke-color-selector');
+  var backgroundColorSelectButton = document.getElementById('background-color-selector');
+  var strokeColorPicker = document.getElementById('stroke-color-picker');
 
   painter.width = document.body.clientWidth;
   painter.height = document.body.clientHeight;
 
   // 数据中心
   var data = {};
+
+  picker('#stroke-color-selector', [currentColor], function(data) {
+    console.log(data);
+  });
 
   // 防抖
   var debounce = (function() {
@@ -177,7 +184,7 @@ window.onload = function() {
   ['mousedown', 'mouseup', 'mousemove'].forEach(function(value) {
     controlPanelWrapper.addEventListener(value, function(event) {
       // 当鼠标在控制板中间被按下时阻止事件
-      if (value === 'mousedown' && event.target !== this) {
+      if (value === 'mousedown' && (event.target || event.srcElement) !== this) {
         return false;
       }
       painter.dispatchEvent(new MouseEvent(event.type, event));
