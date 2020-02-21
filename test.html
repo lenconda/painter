@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+  <meta charset="UTF-8">
+  <title></title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    .scroll {
+      width: 400px;
+      height: 8px;
+      background-color: #ccc;
+      margin: 50px;
+      position: relative;
+    }
+
+    .bar {
+      position: absolute;
+      width: 10px;
+      height: 20px;
+      background: #369;
+      top: -50%;
+      margin-top: -2px;
+      cursor: pointer;
+      left: 0;
+    }
+
+    .mask {
+      width: 0;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      background-color: #369;
+    }
+
+  </style>
+</head>
+
+<body>
+  <div class="scroll" id="scroll">
+    <div class="bar"></div>
+    <div class="mask"></div>
+  </div>
+  <div id="demo"></div>
+</body>
+
+</html>
+<script>
+  var scroll = document.getElementById('scroll')
+  var demo = document.getElementById("demo");
+  var bar = scroll.children[0]
+  var mask = scroll.children[1]
+  bar.onmousedown = function (e) {
+    var e = e || window.event // 标准化event
+    var leftVal = e.clientX - this
+      .offsetLeft // 因为当前盒子是bar,bar是相对于scroll定位的，因此得到的offsetLeft是相对于scroll的距离，所以说leftVal是scroll距离浏览器左边的距离
+    var that = this
+    document.onmousemove = function (e) {
+      var e = e || window.event // 标准化event
+      var maxLimit = scroll.offsetWidth - 10 // 10为bar的宽度
+      that.style.left = event.clientX - leftVal + 'px'; // 设置滑块走过的距离,为什么要设置后获取，因为style是行内样式，不设置湖区不到
+      var val = parseInt(that.style.left);
+      if (val < 0) {
+        val = 0
+      } else if (val > maxLimit) {
+        val = maxLimit
+      }
+      that.style.left = val + 'px'
+      mask.style.width = that.style.left; // 遮罩盒子的宽度
+      // 计算百分比
+      demo.innerHTML = "已经走了:" + parseInt(parseInt(that.style.left) / maxLimit * 100) + "%"; // 走过的距离除以总长就得到百分比
+      window.getSelection ? window.getSelection().removeAllRanges() : document.selection.empty(); // 解决选中出现蓝色的一片的bug
+    }
+    document.onmouseup = function () {
+      document.onmousemove = null; // 弹起鼠标不做任何操作
+    }
+  }
+
+</script>

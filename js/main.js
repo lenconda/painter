@@ -215,7 +215,21 @@ window.onload = function() {
   }
 
   painter.addEventListener('mousedown', function(event) {
+    console.log(111);
     if (event.button === 0) {
+      data.painting = true;
+      var currentPointXAxis = event.clientX;
+      var currentPointYAxis = event.clientY;
+
+      data.currentPoint = {
+        x: currentPointXAxis,
+        y: currentPointYAxis,
+      };
+    }
+  });
+
+  painter.addEventListener('touchstart', function(event) {
+    if (event.touches.length === 1) {
       data.painting = true;
       var currentPointXAxis = event.clientX;
       var currentPointYAxis = event.clientY;
@@ -250,6 +264,30 @@ window.onload = function() {
       debounce(function() {
         data.undoStack = data.undoStack.concat(context.getImageData(0, 0, painter.clientWidth, painter.clientHeight));
       }, 500);
+    }
+  });
+
+  painter.addEventListener('touchmove', function(event) {
+    if (event.touches.length === 1) {
+      var currentPointXAxis = event.touches[0].clientX;
+      var currentPointYAxis = event.touches[0].clientY;
+
+      if (data.painting) {
+        if (data.eraser) {
+          var eraseWidth = data.lineWidth * 10;
+          context.clearRect(currentPointXAxis - data.lineWidth, currentPointYAxis - data.lineWidth, eraseWidth, eraseWidth);
+        } else {
+          drawLine(data.currentPoint.x, data.currentPoint.y, currentPointXAxis, currentPointYAxis);
+          data.currentPoint = {
+            x: currentPointXAxis,
+            y: currentPointYAxis,
+          };
+        }
+
+        debounce(function() {
+          data.undoStack = data.undoStack.concat(context.getImageData(0, 0, painter.clientWidth, painter.clientHeight));
+        }, 500);
+      }
     }
   });
 
