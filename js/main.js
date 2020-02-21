@@ -268,6 +268,8 @@ window.onload = function() {
   });
 
   painter.addEventListener('touchmove', function(event) {
+    event.preventDefault();
+
     if (event.touches.length === 1) {
       var currentPointXAxis = event.touches[0].clientX;
       var currentPointYAxis = event.touches[0].clientY;
